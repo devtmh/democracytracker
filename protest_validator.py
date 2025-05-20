@@ -38,7 +38,15 @@ if uploaded_file:
     # -------------------------------
 
     try:
-        df = pd.read_excel(uploaded_file, sheet_name="Records")
+    ##  Use the following block to replace the commented-out seciont below it
+        @st.cache_data
+        def load_excel(uploaded_file):
+            return pd.read_excel(uploaded_file, sheet_name="Records")
+
+        df = load_excel(uploaded_file)  # ✅ Caches file to reduce processing overhead
+
+    ## comment-out the following line, to be replaced by the block above
+    ## df = pd.read_excel(uploaded_file, sheet_name="Records")
     except Exception as e:
         st.error(f"❌ Error loading file: {e}")
         st.stop()  # Prevent app from running further if file fails to load
@@ -58,6 +66,14 @@ if uploaded_file:
     if "record_index" not in st.session_state:
         st.session_state["record_index"] = 0
 
+    ### Add the following block per copilot
+    # 🚀 Prevent memory overload every 100 records
+    if st.session_state["record_index"] % 100 == 0:
+        keys_to_keep = ["record_index", "selected_type"]
+        for key in list(st.session_state.keys()):
+            if key not in keys_to_keep:
+                del st.session_state[key]  # ✅ Clears unnecessary session data
+    
     record_index = st.session_state["record_index"]
 
     if record_index < len(df):
@@ -130,9 +146,13 @@ if uploaded_file:
         # -------------------------------
         # 🚀 SAVE UPDATED RECORDS TO SOURCE FILE (Enable after development)
         # -------------------------------
+## Block below suggested by copilot to reduce file locks and CPU usage
+       if st.session_state["record_index"] % 50 == 0:  # ✅ Save only every 50 records
+           with pd.ExcelWriter(uploaded_file, mode="a", engine="openpyxl", if_sheet_exists="replace") as writer:
+               df.to_excel(writer, sheet_name="Records", index=False)
 
-        # When ready to save changes directly to the source file, uncomment the following:
-        with pd.ExcelWriter(uploaded_file, mode="a", engine="openpyxl", if_sheet_exists="replace") as writer:
-            df.to_excel(writer, sheet_name="Records", index=False)
+## The following block is commented-out in lieu of the block above per copilot
+##      with pd.ExcelWriter(uploaded_file, mode="a", engine="openpyxl", if_sheet_exists="replace") as writer:
+##          df.to_excel(writer, sheet_name="Records", index=False)
 
         # This will ensure all changes (Valid status & Type selections) persist after closing the app.
