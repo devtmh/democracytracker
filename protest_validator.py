@@ -1,6 +1,17 @@
 import streamlit as st
 import pandas as pd
 import urllib.parse
+import datetime
+
+# Date parser
+def parse_date(date_string: str) -> datetime.datetime | None:
+    # Try interpreting as MM/DD/YY
+    try:
+        interpret_mmddyy = datetime.datetime.strptime(date_string, "%x")
+        return interpret_mmddyy
+
+    except ValueError:
+        return None
 
 # -------------------------------
 # 1️⃣ APP SETUP
@@ -31,111 +42,112 @@ else:
     st.success("✅ File loaded successfully!")
 
 # Check if user uploaded a file
-if uploaded_file:
+if not uploaded_file:
+    exit()
+
+# -------------------------------
+# 3️⃣ LOAD EXCEL DATA
+# -------------------------------
+
+try:
+    df = pd.read_excel(uploaded_file, sheet_name="Records")
+except Exception as e:
+    st.error(f"❌ Error loading file: {e}")
+    st.stop()  # Prevent app from running further if file fails to load
+
+# Ensure the 'Valid' column exists in the dataset
+if "Valid" not in df.columns:
+    df["Valid"] = None  # Initialize validation column
+
+# Ensure the 'Type' column exists
+if "Type" not in df.columns:
+    df["Type"] = None  # Initialize Type column
+
+# -------------------------------
+# 4️⃣ SESSION STATE SETUP (Fix for Persistence)
+# -------------------------------
+
+if "record_index" not in st.session_state:
+    st.session_state["record_index"] = 0
+
+record_index = st.session_state["record_index"]
+
+if record_index < len(df):
+    row = df.iloc[record_index]
 
     # -------------------------------
-    # 3️⃣ LOAD EXCEL DATA
+    # 5️⃣ DISPLAY RECORD DETAILS (Added Debug Output)
     # -------------------------------
 
-    try:
-        df = pd.read_excel(uploaded_file, sheet_name="Records")
-    except Exception as e:
-        st.error(f"❌ Error loading file: {e}")
-        st.stop()  # Prevent app from running further if file fails to load
+    st.write(f"🆔 Currently Showing Record Index: {record_index}")
 
-    # Ensure the 'Valid' column exists in the dataset
-    if "Valid" not in df.columns:
-        df["Valid"] = None  # Initialize validation column
+    # TODO: Warn user if date is not from 2025
+    st.write(f"**City:** {row['City']}")
+    st.write(f"**State:** {row['State']}")
+    st.write(f"**Date:** {row['Date']}")
 
-    # Ensure the 'Type' column exists
-    if "Type" not in df.columns:
-        df["Type"] = None  # Initialize Type column
+    parsed_url = urllib.parse.urlparse(row["URL"])
+    domain = parsed_url.netloc  # Extract domain name
+
+    st.write(f"[Open {domain}]({row['URL']})")
 
     # -------------------------------
-    # 4️⃣ SESSION STATE SETUP (Fix for Persistence)
+    # 6️⃣ EMBED URL IN IFRAME (Reduced Height by 20%)
     # -------------------------------
 
-    if "record_index" not in st.session_state:
-        st.session_state["record_index"] = 0
+    with st.container():
+        try:
+            st.components.v1.html(
+                f'<iframe src="{row["URL"]}" width="100%" height="384"></iframe>',
+                height=404  # Adjusted to match the reduced iframe height
+            )
+        except:
+            st.warning("Unable to load URL in an iframe. Please use the link above.")
 
-    record_index = st.session_state["record_index"]
+    # -------------------------------
+    # 7️⃣ TYPE SELECTION (Fix: Prevent Auto-Advancing)
+    # -------------------------------
 
-    if record_index < len(df):
-        row = df.iloc[record_index]
+    if "selected_type" not in st.session_state:
+        st.session_state["selected_type"] = None
 
-        # -------------------------------
-        # 5️⃣ DISPLAY RECORD DETAILS (Added Debug Output)
-        # -------------------------------
+    event_type = st.selectbox(
+        "Select Type:", ["National", "Tesla", "Statewide", "One-off", "Other"],
+        index=None,
+        key="selected_type"  # ✅ Fix for avoiding reruns due to dropdown selection
+    )
 
-        st.write(f"🆔 Currently Showing Record Index: {record_index}")
+    # -------------------------------
+    # 8️⃣ USER INPUT: VALID OR INVALID (Corrected Button Logic)
+    # -------------------------------
 
-        # TODO: Warn user if date is not from 2025
-        st.write(f"**City:** {row['City']}")
-        st.write(f"**State:** {row['State']}")
-        st.write(f"**Date:** {row['Date']}")
+    if st.button("Valid + Next"):
+        df.at[record_index, "Valid"] = 1
+        df.at[record_index, "Type"] = st.session_state["selected_type"]
+        st.session_state["record_index"] += 1
+        st.rerun()  # ✅ Force Streamlit to refresh & show next record
 
-        parsed_url = urllib.parse.urlparse(row["URL"])
-        domain = parsed_url.netloc  # Extract domain name
+    if st.button("Invalid + Next"):
+        df.at[record_index, "Valid"] = 0
+        st.session_state["record_index"] += 1
+        st.rerun()  # ✅ Force Streamlit to refresh & show next record
 
-        st.write(f"[Open {domain}]({row['URL']})")
+    # -------------------------------
+    # 9️⃣ SAVE PROGRESS & VALID RECORDS
+    # -------------------------------
 
-        # -------------------------------
-        # 6️⃣ EMBED URL IN IFRAME (Reduced Height by 20%)
-        # -------------------------------
+    st.session_state["record_index"] = record_index  # Ensure index persists
 
-        with st.container():
-            try:
-                st.components.v1.html(
-                    f'<iframe src="{row["URL"]}" width="100%" height="384"></iframe>',
-                    height=404  # Adjusted to match the reduced iframe height
-                )
-            except:
-                st.warning("Unable to load URL in an iframe. Please use the link above.")
+    with pd.ExcelWriter(uploaded_file, mode="a", engine="openpyxl") as writer:
+        valid_records = df[df["Valid"] == 1]
+        valid_records.to_excel(writer, sheet_name="valid records", index=False)
 
-        # -------------------------------
-        # 7️⃣ TYPE SELECTION (Fix: Prevent Auto-Advancing)
-        # -------------------------------
+    # -------------------------------
+    # 🚀 SAVE UPDATED RECORDS TO SOURCE FILE (Enable after development)
+    # -------------------------------
 
-        if "selected_type" not in st.session_state:
-            st.session_state["selected_type"] = None
+    # When ready to save changes directly to the source file, uncomment the following:
+    with pd.ExcelWriter(uploaded_file, mode="a", engine="openpyxl", if_sheet_exists="replace") as writer:
+        df.to_excel(writer, sheet_name="Records", index=False)
 
-        event_type = st.selectbox(
-            "Select Type:", ["National", "Tesla", "Statewide", "One-off", "Other"],
-            index=None,
-            key="selected_type"  # ✅ Fix for avoiding reruns due to dropdown selection
-        )
-
-        # -------------------------------
-        # 8️⃣ USER INPUT: VALID OR INVALID (Corrected Button Logic)
-        # -------------------------------
-
-        if st.button("Valid + Next"):
-            df.at[record_index, "Valid"] = 1
-            df.at[record_index, "Type"] = st.session_state["selected_type"]
-            st.session_state["record_index"] += 1
-            st.rerun()  # ✅ Force Streamlit to refresh & show next record
-
-        if st.button("Invalid + Next"):
-            df.at[record_index, "Valid"] = 0
-            st.session_state["record_index"] += 1
-            st.rerun()  # ✅ Force Streamlit to refresh & show next record
-
-        # -------------------------------
-        # 9️⃣ SAVE PROGRESS & VALID RECORDS
-        # -------------------------------
-
-        st.session_state["record_index"] = record_index  # Ensure index persists
-
-        with pd.ExcelWriter(uploaded_file, mode="a", engine="openpyxl") as writer:
-            valid_records = df[df["Valid"] == 1]
-            valid_records.to_excel(writer, sheet_name="valid records", index=False)
-
-        # -------------------------------
-        # 🚀 SAVE UPDATED RECORDS TO SOURCE FILE (Enable after development)
-        # -------------------------------
-
-        # When ready to save changes directly to the source file, uncomment the following:
-        with pd.ExcelWriter(uploaded_file, mode="a", engine="openpyxl", if_sheet_exists="replace") as writer:
-            df.to_excel(writer, sheet_name="Records", index=False)
-
-        # This will ensure all changes (Valid status & Type selections) persist after closing the app.
+    # This will ensure all changes (Valid status & Type selections) persist after closing the app.
