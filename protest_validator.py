@@ -11,11 +11,11 @@ st.title("Protest Validator")
 # Display Event Type Classification Key (Reduced Spacing)
 st.markdown("### Event Type Classification")
 st.markdown("""
-**National** - 50501, Indivisible, or other multi-state pre-announced event  
-**Tesla** - Tesla Takedown  
-**Statewide** - Organized action within one state or a small group of neighboring states  
-**One-off** - Organized one-time events, e.g., at officials' offices or responding to specific events  
-**Other** - All others, including spontaneous small groups, wildcat events  
+**National** - 50501, Indivisible, or other multi-state pre-announced event
+**Tesla** - Tesla Takedown
+**Statewide** - Organized action within one state or a small group of neighboring states
+**One-off** - Organized one-time events, e.g., at officials' offices or responding to specific events
+**Other** - All others, including spontaneous small groups, wildcat events
 """)
 
 # File uploader to select Excel file
@@ -69,7 +69,10 @@ if uploaded_file:
 
         st.write(f"🆔 Currently Showing Record Index: {record_index}")
 
-        st.write(f"**City:** {row['City']}, **State:** {row['State']}, **Date:** {row['Date']}")
+        # TODO: Warn user if date is not from 2025
+        st.write(f"**City:** {row['City']}")
+        st.write(f"**State:** {row['State']}")
+        st.write(f"**Date:** {row['Date']}")
 
         parsed_url = urllib.parse.urlparse(row["URL"])
         domain = parsed_url.netloc  # Extract domain name
