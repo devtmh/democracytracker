@@ -22,10 +22,10 @@ st.title("Protest Validator")
 # Display Event Type Classification Key (Reduced Spacing)
 st.markdown("### Event Type Classification")
 st.markdown("""
-**National** - 50501, Indivisible, or other multi-state pre-announced event
-**Tesla** - Tesla Takedown
-**Statewide** - Organized action within one state or a small group of neighboring states
-**One-off** - Organized one-time events, e.g., at officials' offices or responding to specific events
+**National** - 50501, Indivisible, or other multi-state pre-announced event \\
+**Tesla** - Tesla Takedown \\
+**Statewide** - Organized action within one state or a small group of neighboring states \\
+**One-off** - Organized one-time events, e.g., at officials' offices or responding to specific events \\
 **Other** - All others, including spontaneous small groups, wildcat events
 """)
 
