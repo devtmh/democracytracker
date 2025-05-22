@@ -38,15 +38,18 @@ st.markdown("""
 # -------------------------------
 
 # Initialize session state variables if they don't exist
+## Record index to identify the record in the set
 if "record_index" not in st.session_state:
     st.session_state.record_index = 0
 
 if "data" not in st.session_state:
     st.session_state.data = None
 
+## Identify name of source file
 if "original_filename" not in st.session_state:
     st.session_state.original_filename = None
 
+## create a last_saved value for continuity?
 if "last_saved" not in st.session_state:
     st.session_state.last_saved = None
 
@@ -55,6 +58,7 @@ if "last_saved" not in st.session_state:
 # -------------------------------
 
 # File uploader in sidebar
+## Note:  we would like to have a file type so it will accept csv files
 with st.sidebar:
     st.header("File Operations")
     uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
