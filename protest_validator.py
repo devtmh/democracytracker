@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 
 # Date parser
+## Interpret the date provided by the submitter
 def parse_date(date_string: str) -> datetime | None:
     # Try interpreting as MM/DD/YY
     try:
@@ -24,6 +25,9 @@ st.set_page_config(page_title="Protest Validator", layout="wide")
 st.title("Protest Validator")
 
 # Display Event Type Classification Key
+## This list is a reference for the user.  Ideally we can reduce to a hoverable tooltip
+## Keep this aligned with the Event type selection to be used in the Record Display section
+
 st.markdown("### Event Type Classification")
 st.markdown("""
 **National** - 50501, Indivisible, or other multi-state pre-announced event \\
@@ -54,7 +58,7 @@ if "last_saved" not in st.session_state:
     st.session_state.last_saved = None
 
 # -------------------------------
-# 3️⃣ FILE LOADING
+# 3️⃣ FILE INPUT & LOADING
 # -------------------------------
 
 # File uploader in sidebar
@@ -138,6 +142,7 @@ with st.sidebar:
 # -------------------------------
 # 5️⃣ DOWNLOAD FUNCTIONALITY
 # -------------------------------
+### This feature has never been tested since the app always crashes before we can get here.
 
 # Add download button in sidebar
 with st.sidebar:
@@ -187,14 +192,14 @@ else:
     if st.session_state.record_index < len(st.session_state.data):
         row = st.session_state.data.iloc[st.session_state.record_index]
 
-        # Display record information
+        # Display record information in the UI
         st.header(f"Record #{st.session_state.record_index + 1}")
 
         # Create two columns for record details and iframe
-        col1, col2 = st.columns([1, 1])
+        col1, col2 = st.columns([1, 1])  # currently 1:1--maybe reduce left column?  
 
         with col1:
-            # Display record details
+            # Display record details in UI
             st.subheader("Record Details")
             info_cols = st.columns(3)
             with info_cols[0]:
@@ -204,7 +209,7 @@ else:
             with info_cols[2]:
                 st.write(f"**Date:** {row['Date']}")
 
-            # Display URL and extract domain
+            # Parse URL and extract the domain to reduce coginitive load for the validator
             try:
                 parsed_url = urllib.parse.urlparse(row["URL"])
                 domain = parsed_url.netloc
@@ -212,9 +217,9 @@ else:
             except:
                 st.write(f"**URL:** {row.get('URL', 'No URL provided')}")
 
-            # Display current status
+            # Display current status for the record
             current_status = "⏳ Pending"
-            if row["Valid"] == 1:
+            if   row["Valid"] == 1:
                 current_status = "✅ Valid"
             elif row["Valid"] == 0:
                 current_status = "❌ Invalid"
@@ -224,7 +229,7 @@ else:
             if row["Type"] is not None and row["Valid"] == 1:
                 st.write(f"**Type:** {row['Type']}")
 
-            # Validation controls
+            # Create and display Validation features
             st.subheader("Validation")
 
             # Event type selection (only shown if not marked as invalid)
@@ -236,9 +241,11 @@ else:
                     key=f"type_select_{st.session_state.record_index}"
                 )
 
-            # Validation buttons
+            # Define User input buttons
+            ## Create a 2-column container
             col_valid, col_invalid = st.columns(2)
 
+            ## Define actions for valid input
             with col_valid:
                 if st.button("✅ Mark as Valid", key=f"valid_btn_{st.session_state.record_index}",
                             use_container_width=True, type="primary"):
@@ -259,6 +266,7 @@ else:
 
                         st.rerun()
 
+            ## Define actions for invalid input
             with col_invalid:
                 if st.button("❌ Mark as Invalid", key=f"invalid_btn_{st.session_state.record_index}",
                             use_container_width=True):
