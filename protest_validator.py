@@ -17,7 +17,7 @@ def parse_date(date_string: str) -> datetime | None:
         return None
 
 # -------------------------------
-# 1️⃣ APP SETUP
+# 1: APP SETUP
 # -------------------------------
 
 st.set_page_config(page_title="Protest Validator", layout="wide")
@@ -34,7 +34,7 @@ st.markdown("""
 """)
 
 # -------------------------------
-# 2️⃣ SESSION STATE INITIALIZATION
+# 2: SESSION STATE INITIALIZATION
 # -------------------------------
 
 # Initialize session state variables if they don't exist
@@ -54,7 +54,7 @@ if "last_saved" not in st.session_state:
     st.session_state.last_saved = None
 
 # -------------------------------
-# 3️⃣ FILE LOADING
+# 3: FILE LOADING
 # -------------------------------
 
 # File uploader in sidebar
@@ -86,7 +86,7 @@ with st.sidebar:
             st.error(f"❌ Error loading file: {e}")
 
 # -------------------------------
-# 4️⃣ NAVIGATION CONTROLS
+# 4: NAVIGATION CONTROLS
 # -------------------------------
 
 # Add navigation controls in sidebar
@@ -136,7 +136,7 @@ with st.sidebar:
             st.write(f"⏳ Pending: {pending_count}")
 
 # -------------------------------
-# 5️⃣ DOWNLOAD FUNCTIONALITY
+# 5: DOWNLOAD FUNCTIONALITY
 # -------------------------------
 
 # Add download button in sidebar
@@ -176,7 +176,7 @@ with st.sidebar:
             st.write(f"Last auto-saved in memory: {st.session_state.last_saved}")
 
 # -------------------------------
-# 6️⃣ MAIN CONTENT - RECORD DISPLAY
+# 6: MAIN CONTENT - RECORD DISPLAY
 # -------------------------------
 
 # Check if data is loaded
