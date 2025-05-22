@@ -7,12 +7,17 @@ https://public.tableau.com/app/profile/tom.hirata/viz/2025Pro-DemocracyProtests/
 3. Provide optional classification of the protest to enable feature updates in the dataviz
 4. Allow the validator to clean up dates and places when the URL disagrees with the user-created metadata
 
-## Dependencies
+## Setup
 `democracytracker` depends on `pandas`, `streamlit`, and `openpyxl`.
 
-`watchdog` is an optional dependency.
+`watchdog` is an optional dependency that `streamlit` says improves performance.
 
-Dependency management using `pyenv` is recommended.
+Dependency management using `pipenv` is recommended.
+
+1. Install `pipenv` [according to the instructions](https://pipenv.pypa.io/en/latest/installation.html)
+2. Clone the repository: `git clone git@github.com:devtmh/democracytracker.git`
+3. Navigate to the repository folder and activate the virtual environment: `pipenv activate`
+4. Install dependencies: `pipenv install`
 
 ## Usage
 Run `streamlit run protest_validation.py`, and a browser window will open
