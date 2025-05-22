@@ -196,6 +196,7 @@ if st.session_state.record_index < len(st.session_state.data):
 
     with col1:
         # Display record details
+        # TODO: change writes to forms in order to facilitate correcting invalid data
         st.subheader("Record Details")
         info_cols = st.columns(3)
         with info_cols[0]:
@@ -204,6 +205,9 @@ if st.session_state.record_index < len(st.session_state.data):
             st.write(f"**State:** {row['State']}")
         with info_cols[2]:
             st.write(f"**Date:** {row['Date']}")
+            # If date is valid but from before 2025, display warning
+            if row['Date'].year < 2025:
+                st.warning("Provided date is before 2025.")
 
         # Display URL and extract domain
         try:
