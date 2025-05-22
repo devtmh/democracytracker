@@ -182,89 +182,74 @@ with st.sidebar:
 # Check if data is loaded
 if st.session_state.data is None:
     st.warning("⚠ Please upload an Excel file using the sidebar to begin validation.")
-else:
-    # Get current record
-    if st.session_state.record_index < len(st.session_state.data):
-        row = st.session_state.data.iloc[st.session_state.record_index]
+    exit()
 
-        # Display record information
-        st.header(f"Record #{st.session_state.record_index + 1}")
+# Get current record
+if st.session_state.record_index < len(st.session_state.data):
+    row = st.session_state.data.iloc[st.session_state.record_index]
 
-        # Create two columns for record details and iframe
-        col1, col2 = st.columns([1, 1])
+    # Display record information
+    st.header(f"Record #{st.session_state.record_index + 1}")
 
-        with col1:
-            # Display record details
-            st.subheader("Record Details")
-            info_cols = st.columns(3)
-            with info_cols[0]:
-                st.write(f"**City:** {row['City']}")
-            with info_cols[1]:
-                st.write(f"**State:** {row['State']}")
-            with info_cols[2]:
-                st.write(f"**Date:** {row['Date']}")
+    # Create two columns for record details and iframe
+    col1, col2 = st.columns([1, 1])
 
-            # Display URL and extract domain
-            try:
-                parsed_url = urllib.parse.urlparse(row["URL"])
-                domain = parsed_url.netloc
-                st.write(f"**Source:** [{domain}]({row['URL']})")
-            except:
-                st.write(f"**URL:** {row.get('URL', 'No URL provided')}")
+    with col1:
+        # Display record details
+        st.subheader("Record Details")
+        info_cols = st.columns(3)
+        with info_cols[0]:
+            st.write(f"**City:** {row['City']}")
+        with info_cols[1]:
+            st.write(f"**State:** {row['State']}")
+        with info_cols[2]:
+            st.write(f"**Date:** {row['Date']}")
 
-            # Display current status
-            current_status = "⏳ Pending"
-            if row["Valid"] == 1:
-                current_status = "✅ Valid"
-            elif row["Valid"] == 0:
-                current_status = "❌ Invalid"
+        # Display URL and extract domain
+        try:
+            parsed_url = urllib.parse.urlparse(row["URL"])
+            domain = parsed_url.netloc
+            st.write(f"**Source:** [{domain}]({row['URL']})")
+        except:
+            st.write(f"**URL:** {row.get('URL', 'No URL provided')}")
 
-            st.write(f"**Status:** {current_status}")
+        # Display current status
+        current_status = "⏳ Pending"
+        if row["Valid"] == 1:
+            current_status = "✅ Valid"
+        elif row["Valid"] == 0:
+            current_status = "❌ Invalid"
 
-            if row["Type"] is not None and row["Valid"] == 1:
-                st.write(f"**Type:** {row['Type']}")
+        st.write(f"**Status:** {current_status}")
 
-            # Validation controls
-            st.subheader("Validation")
+        if row["Type"] is not None and row["Valid"] == 1:
+            st.write(f"**Type:** {row['Type']}")
 
-            # Event type selection (only shown if not marked as invalid)
-            if row["Valid"] != 0:
-                event_type = st.selectbox(
-                    "Select Event Type:",
-                    options=["National", "Tesla", "Statewide", "One-off", "Other"],
-                    index=None if row["Type"] is None else ["National", "Tesla", "Statewide", "One-off", "Other"].index(row["Type"]),
-                    key=f"type_select_{st.session_state.record_index}"
-                )
+        # Validation controls
+        st.subheader("Validation")
 
-            # Validation buttons
-            col_valid, col_invalid = st.columns(2)
+        # Event type selection (only shown if not marked as invalid)
+        if row["Valid"] != 0:
+            event_type = st.selectbox(
+                "Select Event Type:",
+                options=["National", "Tesla", "Statewide", "One-off", "Other"],
+                index=None if row["Type"] is None else ["National", "Tesla", "Statewide", "One-off", "Other"].index(row["Type"]),
+                key=f"type_select_{st.session_state.record_index}"
+            )
 
-            with col_valid:
-                if st.button("✅ Mark as Valid", key=f"valid_btn_{st.session_state.record_index}",
-                            use_container_width=True, type="primary"):
-                    # Check if event type is selected
-                    if event_type is None:
-                        st.error("Please select an event type before marking as valid.")
-                    else:
-                        # Update the dataframe
-                        st.session_state.data.at[st.session_state.record_index, "Valid"] = 1
-                        st.session_state.data.at[st.session_state.record_index, "Type"] = event_type
+        # Validation buttons
+        col_valid, col_invalid = st.columns(2)
 
-                        # Update last saved timestamp
-                        st.session_state.last_saved = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-                        # Move to next record if not at the end
-                        if st.session_state.record_index < len(st.session_state.data) - 1:
-                            st.session_state.record_index += 1
-
-                        st.rerun()
-
-            with col_invalid:
-                if st.button("❌ Mark as Invalid", key=f"invalid_btn_{st.session_state.record_index}",
-                            use_container_width=True):
+        with col_valid:
+            if st.button("✅ Mark as Valid", key=f"valid_btn_{st.session_state.record_index}",
+                        use_container_width=True, type="primary"):
+                # Check if event type is selected
+                if event_type is None:
+                    st.error("Please select an event type before marking as valid.")
+                else:
                     # Update the dataframe
-                    st.session_state.data.at[st.session_state.record_index, "Valid"] = 0
-                    st.session_state.data.at[st.session_state.record_index, "Type"] = None
+                    st.session_state.data.at[st.session_state.record_index, "Valid"] = 1
+                    st.session_state.data.at[st.session_state.record_index, "Type"] = event_type
 
                     # Update last saved timestamp
                     st.session_state.last_saved = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -275,18 +260,34 @@ else:
 
                     st.rerun()
 
-        with col2:
-            # Display URL in iframe
-            st.subheader("Preview")
-            try:
-                if pd.notna(row["URL"]):
-                    st.components.v1.html(
-                        f'<iframe src="{row["URL"]}" width="100%" height="500" style="border: 1px solid #ddd; border-radius: 5px;"></iframe>',
-                        height=520
-                    )
-                else:
-                    st.warning("No URL available for this record.")
-            except:
-                st.warning("Unable to load URL in an iframe. Please use the link above to view the source.")
-    else:
-        st.success("✅ All records processed! You can download your results using the sidebar.")
+        with col_invalid:
+            if st.button("❌ Mark as Invalid", key=f"invalid_btn_{st.session_state.record_index}",
+                        use_container_width=True):
+                # Update the dataframe
+                st.session_state.data.at[st.session_state.record_index, "Valid"] = 0
+                st.session_state.data.at[st.session_state.record_index, "Type"] = None
+
+                # Update last saved timestamp
+                st.session_state.last_saved = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                # Move to next record if not at the end
+                if st.session_state.record_index < len(st.session_state.data) - 1:
+                    st.session_state.record_index += 1
+
+                st.rerun()
+
+    with col2:
+        # Display URL in iframe
+        st.subheader("Preview")
+        try:
+            if pd.notna(row["URL"]):
+                st.components.v1.html(
+                    f'<iframe src="{row["URL"]}" width="100%" height="500" style="border: 1px solid #ddd; border-radius: 5px;"></iframe>',
+                    height=520
+                )
+            else:
+                st.warning("No URL available for this record.")
+        except:
+            st.warning("Unable to load URL in an iframe. Please use the link above to view the source.")
+else:
+    st.success("✅ All records processed! You can download your results using the sidebar.")
