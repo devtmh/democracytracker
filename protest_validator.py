@@ -7,6 +7,8 @@ import os
 from datetime import datetime
 
 # Date parser
+## Interpret the date provided by the submitter
+
 def parse_date(date_string: str) -> datetime | None:
     # Try interpreting as MM/DD/YY
     try:
@@ -24,6 +26,9 @@ st.set_page_config(page_title="Protest Validator", layout="wide")
 st.title("Protest Validator")
 
 # Display Event Type Classification Key
+## This list is a reference for the user.  Ideally we can reduce to a hoverable tooltip
+## Keep this aligned with the Event type selection to be used in the Record Display section
+
 st.markdown("### Event Type Classification")
 st.markdown("""
 **National** - 50501, Indivisible, or other multi-state pre-announced event \\
@@ -138,6 +143,7 @@ with st.sidebar:
 # -------------------------------
 # 5: DOWNLOAD FUNCTIONALITY
 # -------------------------------
+### This feature has never been tested since the app always crashes before we can get here.
 
 # Add download button in sidebar
 with st.sidebar:
