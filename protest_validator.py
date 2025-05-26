@@ -210,10 +210,14 @@ if st.session_state.record_index < len(st.session_state.data):
         with info_cols[1]:
             st.write(f"**State:** {row['State']}")
         with info_cols[2]:
-            st.write(f"**Date:** {row['Date']}")
+            date = st.date_input(f"**Date:**", row['Date'])
             # If date is valid but from before 2025, display warning
             if row['Date'].year < 2025:
                 st.warning("Provided date is before 2025.")
+
+            # Update with provided date
+            frame = st.session_state.data
+            frame.iat[st.session_state.record_index,0] = date
 
         # Display URL and extract domain
         try:
