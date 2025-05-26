@@ -1,0 +1,13 @@
+'''
+## This script will clean a list of validated events by date and location.  
+  First eliminate duplicate records with identical date, place, and url
+  Next, when date and place are identical, concatenate the URLs and separate by a space
+'''
+import pandas as pd
+import io
+import os
+
+uploaded_file = pd.read_excel('Be There, Be Counted ao20250503.xlsx')
+
+df = pd.read_excel(uploaded_file, sheet_name="Records")
+    
