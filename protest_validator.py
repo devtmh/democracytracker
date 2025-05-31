@@ -19,7 +19,7 @@ def parse_date(date_string: str) -> datetime | None:
         return None
 
 # -------------------------------
-# 1: APP SETUP
+# 1: APP SETUP--For streamlit, define the basic web page
 # -------------------------------
 
 st.set_page_config(page_title="Protest Validator", layout="wide")
@@ -59,10 +59,10 @@ if "last_saved" not in st.session_state:
     st.session_state.last_saved = None
 
 # -------------------------------
-# 3: FILE LOADING
+# 3: FILE LOADING--Create file loader in streamlit, define the upload file, and add variables to session state
 # -------------------------------
 
-# File uploader in sidebar
+# Put File uploader in sidebar
 ## Note:  we would like to have a file type so it will accept csv files
 with st.sidebar:
     st.header("File Operations")
@@ -141,7 +141,7 @@ with st.sidebar:
             st.write(f"⏳ Pending: {pending_count}")
 
 # -------------------------------
-# 5: DOWNLOAD FUNCTIONALITY
+# 5: DOWNLOAD FUNCTIONALITY--Enable user to download the updated file
 # -------------------------------
 ### This feature has never been tested since the app always crashes before we can get here.
 
