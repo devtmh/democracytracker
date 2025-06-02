@@ -80,7 +80,7 @@ with st.sidebar:
             if "Type" not in df.columns:
                 df["Type"] = None
 
-            # Store the data and filename in session state
+            # Store the data and filename in streamlit session state
             st.session_state.data = df
             st.session_state.original_filename = uploaded_file.name
             st.session_state.record_index = 0
@@ -199,7 +199,7 @@ if st.session_state.record_index < len(st.session_state.data):
     # Display record information
     st.header(f"Record #{st.session_state.record_index + 1}")
 
-    # Create two columns for record details and iframe
+    # Create two columns, col1 for record details and col2 for iframe
     col1, col2 = st.columns([1, 1])
 
     with col1:
@@ -227,6 +227,8 @@ if st.session_state.record_index < len(st.session_state.data):
         try:
             parsed_url = urllib.parse.urlparse(row["URL"])
             domain = parsed_url.netloc
+            
+            ### Display the URL on the web page
             st.write(f"**Source:** [{domain}]({row['URL']})")
         except:
             st.write(f"**URL:** {row.get('URL', 'No URL provided')}")
@@ -258,12 +260,19 @@ if st.session_state.record_index < len(st.session_state.data):
         # Validation buttons
         col_valid, col_invalid = st.columns(2)
 
+        ### We created buttons for input--I believe we can override the button input and set default values
+        ''' Question: Since these are streamlit objects, should we also delete/comment the 
+            button objects and just have the program populate the values and load the next record?
+        '''
         with col_valid:
+            ### Define button; User selects <valid>, trigger actions to set values for <Valid>, <Type>, <SaveTS>
             if st.button("✅ Mark as Valid", key=f"valid_btn_{st.session_state.record_index}",
                         use_container_width=True, type="primary"):
                 # Check if event type is selected
+                ### Change to event_type = "Other"
                 if event_type is None:
                     st.error("Please select an event type before marking as valid.")
+                ### comment out <else>
                 else:
                     # Update the dataframe
                     st.session_state.data.at[st.session_state.record_index, "Valid"] = 1
@@ -297,6 +306,7 @@ if st.session_state.record_index < len(st.session_state.data):
     with col2:
         # Display URL in iframe
         st.subheader("Preview")
+        ### if the record's value <URL> is not null, render it in the iframe, or say no URL
         try:
             if pd.notna(row["URL"]):
                 st.components.v1.html(
@@ -307,5 +317,18 @@ if st.session_state.record_index < len(st.session_state.data):
                 st.warning("No URL available for this record.")
         except:
             st.warning("Unable to load URL in an iframe. Please use the link above to view the source.")
+
+    ### Going to try just defining the variables here and see what happens.  
+    ### GenAI tell me if this will work
+    # Update the dataframe
+    st.session_state.data.at[st.session_state.record_index, "Valid"] = 1
+    st.session_state.data.at[st.session_state.record_index, "Type"] = event_type
+    # Update last saved timestamp
+    st.session_state.last_saved = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # Move to next record if not at the end
+    if st.session_state.record_index < len(st.session_state.data) - 1:
+        st.session_state.record_index += 1
+
+
 else:
     st.success("✅ All records processed! You can download your results using the sidebar.")
