@@ -211,7 +211,7 @@ if st.session_state.record_index < len(st.session_state.data):
             st.write(f"**State:** {row['State']}")
         with info_cols[2]:
             # I desperately hope we will not need this software until 2100
-            date = st.date_input(f"**Date:**", row['Date'], max_value="2100-01-01")
+            date = st.date_input(f"**Date:**", row['Date'], max_value=datetime.date(2100, 1, 1))
 
             # If date is valid but from before 2025, display warning
             if row['Date'].year < 2025:
